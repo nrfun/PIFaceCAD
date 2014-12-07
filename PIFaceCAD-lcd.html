@@ -1,0 +1,46 @@
+<!-- 
+ PIFaceCAD-lcd.html
+ RedNode presentation file for PIFaceCAD lcd accessory.
+-->
+<script type="text/javascript">
+    RED.nodes.registerType('PIFaceCAD-lcd',{
+        category: 'output',
+        color: '#cdbbcf',
+        defaults: {
+            name: {value:""},
+            width: {value:"16"},
+            height: {value:"2"},
+            showCursor: {value:false},
+        },
+        inputs:1,
+        outputs:1,
+        icon: "PIFaceCADLCD.png",
+        label: function() {
+            return this.name||"PFC lcd";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="PIFaceCAD-lcd">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i>Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-width"><i class="icon-none"></i>Width</label>
+        <input type="text" id="node-input-width" placeholder="<width in chars>">
+    </div>
+    <div class="form-row">
+        <label for="node-input-height"><i class="icon-password"></i>Height</label>
+        <input type="text" id="node-input-height" placeholder="<height in chars>">
+    </div>
+     <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-showCursor" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-showCursor" style="width: 70%;">Display the cursor</label>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="PIFaceCAD-lcd">
+    <p>first pass to wrap the PIFaceCAD LCD (output)</p>
+</script>

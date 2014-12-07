@@ -1,0 +1,21 @@
+{
+  "name": "pifacecad",
+  "version": "0.0.1",
+  "description": "Nodered node wrapper for PIFace Control And Display board display",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nrfun/PIFaceCAD"
+  },
+  "keywords": [
+    "node-red",
+    "PIFace"
+  ],
+  "node-red"     : {
+        "PIFaceCAD-lcd": {
+            "pifacecld": "PIFaceCAD-lcd.js"
+        }
+    }
+ }
