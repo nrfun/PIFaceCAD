@@ -10,11 +10,21 @@
 //  - update regions - param the region location and sizes
 //  - flash the back light
 //  - custom characters
+//  - config of cursor modes
 
 
 "option strict";
+var exec = require('child_process').exec;
+var fs   = require('fs');
+var wrapperCommand = 'python3 ' + __dirname+'/PIFaceCAD.py';
 
 module.exports = function(RED) {
+
+    
+    if (!fs.existsSync("/dev/ttyAMA0")) { // unlikely if not on a Pi
+        throw "Info : Ignoring Raspberry Pi specific node.";
+    }
+
     function PIFaceLCD(config) {
         RED.nodes.createNode(this,config);
         var node = this;
@@ -27,26 +37,18 @@ module.exports = function(RED) {
 
 		this.log(width + " x " + height);
 
-        // Attempt to start the py child
-
-        // handle any problems we found so far
-
-
-
         this.on('input', function(msg) {
+            this.log("here be some input " + msg.payload);
         	display(msg.payload);
         });
     }
     RED.nodes.registerType("PIFaceCAD-lcd",PIFaceLCD);
 }
 
-
 // send the message out to the PIFaceCAD lcd module via the python process we
 // started earlier
 function display(msg) {
-	console.log("wooo");
-	
-    console.log( "here:" + msg);
+    console.log( "got:" + msg);
 	
     // preprocess the string if we want
     //  - dimensions?
@@ -54,6 +56,16 @@ function display(msg) {
 
     // clear the screen
     // push the new message 
-
+    exec(wrapperCommand + " disp '" + msg + "'", function(error, stdout, stderr) {
+        console.log('stdout: ', stdout);
+        console.log('stderr: ', stderr);
+        if (error !== null) {
+            console.log('exec error: ', error);
+        }
+    });
 
 } // display function
+
+
+
+
