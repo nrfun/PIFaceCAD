@@ -41,6 +41,16 @@ module.exports = function(RED) {
             this.log("here be some input " + msg.payload);
         	display(msg.payload);
         });
+
+        
+        this.on("close", function() {
+            // Called when the node is shutdown - eg on redeploy.
+            this.log("closing in js node" );
+            // Allows ports to be closed, connections dropped etc.
+            // eg: this.client.disconnect();
+            executeCmd("close");
+        });
+
     }
     RED.nodes.registerType("PIFaceCAD-lcd",PIFaceLCD);
 }
@@ -56,16 +66,20 @@ function display(msg) {
 
     // clear the screen
     // push the new message 
-    exec(wrapperCommand + " disp '" + msg + "'", function(error, stdout, stderr) {
+    executeCmd("disp '" + msg + "'")
+
+} // display function
+
+// hand off to the python process via stdio
+function executeCmd(commandString) {
+    console.log ("execute " + commandString)
+    exec(wrapperCommand + " " + commandString, function(error, stdout, stderr) {
         console.log('stdout: ', stdout);
         console.log('stderr: ', stderr);
         if (error !== null) {
             console.log('exec error: ', error);
         }
     });
-
-} // display function
-
-
+}
 
 
