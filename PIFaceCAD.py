@@ -22,8 +22,22 @@ def badParams():
 
 # process the command we got. Set True if we are persistant... this might help prevent unintentionally recursing
 def dispatch(isCalledFromPersist, cmd):
+    print( 'Argument List:', str(sys.argv))
+
+    if isCalledFromPersist==True:
+        # tweak what we have so it 'matches' what things are like if we are called in a non-persistent way
+        cmd = "dummy " + cmd
+        args = cmd.split()
+        cmd = args[1]
+    else:
+        args = str(sys.argv)
+
+    print( 'Args:', args)
+
+
+
     if cmd == "disp":                    # display a message
-        param = sys.argv[2]
+        param = args[2]
         print( "disp " + param)
         # just assume we want to see the msg
         cad.lcd.backlight_on()
@@ -35,7 +49,7 @@ def dispatch(isCalledFromPersist, cmd):
         cad.lcd.clear()
     
     elif cmd == "blink":                 # blink cursor on or off
-        param = sys.argv[2].lower()
+        param = args[2].lower()
         print( "blink" + param)
         if param=="on" : 
             cad.lcd.blink_on()
@@ -47,7 +61,7 @@ def dispatch(isCalledFromPersist, cmd):
 
 
     elif cmd == "cursor":                 # show or hide that cursor
-        param = sys.argv[2].lower()
+        param = args[2].lower()
         print( "cursor " + param)
         if param=="on" : 
             cad.lcd.cursor_on()
@@ -57,7 +71,7 @@ def dispatch(isCalledFromPersist, cmd):
             badParams()
       
     elif cmd == "light":                 # turn the backlight on or off
-        param = sys.argv[2].lower()
+        param = args[2].lower()
         print( "light " + param)
         if param=="on" : 
             cad.lcd.backlight_on()
@@ -67,7 +81,7 @@ def dispatch(isCalledFromPersist, cmd):
             badParams()
 
     elif cmd =="move":                  # move left or right
-        param = sys.argv[2].lower()
+        param = args[2].lower()
         print( "move " + param)
         if param=="left" : 
             cad.lcd.move_left()
@@ -105,6 +119,7 @@ def doPersist():
     while True:
         cmd = input()
         # TODO: validate this 
+        print("input: " + cmd)
         dispatch(True, cmd)    
 
 
