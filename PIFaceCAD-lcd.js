@@ -14,9 +14,10 @@
 
 
 "option strict";
-var exec = require('child_process').exec;
+var exec  = require('child_process').exec;
 var spawn = require('child_process').spawn;
-var fs   = require('fs');
+var fs    = require('fs');
+
 //var wrapperCommand = 'python3 ' + __dirname+'/PIFaceCAD.py';
 var wrapperCommand = __dirname+'/PIFaceCAD.sh';
 
@@ -42,7 +43,7 @@ module.exports = function(RED) {
         startPIFaceDriver(node);
         node.status({fill:"amber",shape:"circle",text:"ooo"});
         node.on('input', function(msg) {
-            node.log("here be some input " + msg.payload);
+            if(RED.settings.verbose) { node.log("here be some input " + msg.payload);}
         	display(node, msg.payload);
             node.status({fill:"green",shape:"circle",text:msg.payload});
         });
@@ -60,6 +61,7 @@ module.exports = function(RED) {
 
 
         // --- child events
+
         node.child.stderr.on('data', function (data) {
             if (RED.settings.verbose) { node.log("err: "+data+" :"); }
         });
@@ -96,7 +98,8 @@ function stopPIFaceDriver(node) {
         node.child.kill('SIGKILL');
     }
     
-    if (RED.settings.verbose) { node.log("driver stopped"); }
+    // should probably make that conditional.
+    node.log("driver stopped");
 }
 
 
@@ -116,9 +119,9 @@ function display(node, msg) {
     
     if (node.child != null) {
         node.log("push the msg to the driver");
-        node.child.stdin.write("disp '" + msg + "'")
+        node.child.stdin.write('disp ' + msg +  '\n');
     } else {
-        executeCmd(node, "disp '" + msg + "'");
+        executeCmd(node, "disp " + msg );
     }
 
 } // display function
