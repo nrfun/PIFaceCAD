@@ -14,6 +14,7 @@
 
 
 "option strict";
+var util = require('util');
 var exec  = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var fs    = require('fs');
@@ -28,23 +29,74 @@ module.exports = function(RED) {
         throw "Info : Ignoring Raspberry Pi specific node.";
     }
 
+    if (!fs.existsSync("/usr/share/doc/python-rpi.gpio")) {
+        util.log("[rpi-gpio] Info : Can't find RPi.GPIO python library.");
+        throw "Warning : Can't find RPi.GPIO python library.";
+    }
+
+
+    function PIFaceIn(config)
+    {
+        RED.nodes.createNode(this,config);
+        var node = this;
+
+        if(RED.settings.verbose){ node.log("PFC In loaded"); }
+
+        node.on('input', function(msg) {
+            checkForInput();
+            node.status({fill:"green",shape:"circle",text:msg.payload});
+        });
+
+        node.on("close", function() {
+            // Called when the node is shutdown - eg on redeploy.
+            stopPIFaceDriver(this);
+        });
+
+
+        // need to spawn the driver
+        startPIFaceDriver(node);
+
+        if (node.child != null) {
+            node.child.stdin.write('press on\n');
+            node.child.stdin.write('release on\n');   
+        }
+
+
+        node.child.stdout.on('data', function (data) {
+            data = "."+data.toString();
+            if (data.length > 0) {
+                node.send({ topic:""+node.pin, payload:data });
+                node.status({fill:"green",shape:"dot",text:data});
+                if (RED.settings.verbose) { node.log("out: "+data+" :"); }
+            }
+        });
+
+
+    }
+    RED.nodes.registerType("PIFaceCAD-in",PIFaceIn);
+
+
     function PIFaceLCD(config) {
         RED.nodes.createNode(this,config);
         var node = this;
 
-        node.log("PiFaceLCD");
+        //node.log("PiFaceLCD");
 
         var width      = config.width;
 		var height     = config.height;
-        var showCursor = config.showCursor;
+        var cursor     = config.showCursor;
+        var light      = config.lightOn;
 
-		node.log(width + " x " + height);
+
+		if(RED.settings.verbose){ node.log(width + " x " + height); }
 
         startPIFaceDriver(node);
         node.status({fill:"amber",shape:"circle",text:"ooo"});
         node.on('input', function(msg) {
-            if(RED.settings.verbose) { node.log("here be some input " + msg.payload);}
-        	display(node, msg.payload);
+            if(RED.settings.verbose) { node.log("string " + msg.payload);}
+        	msg.cursor = cursor;
+            msg.light = light;
+            display(node, msg);
             node.status({fill:"green",shape:"circle",text:msg.payload});
         });
 
@@ -53,10 +105,6 @@ module.exports = function(RED) {
             // Called when the node is shutdown - eg on redeploy.
             node.log("closing in js node" );
             stopPIFaceDriver(this);
-            node.status({fill:"red",shape:"circle",text:""});
-            // Allows ports to be closed, connections dropped etc.
-            // eg: this.client.disconnect();
-            executeCmd(node, "close");
         });
 
 
@@ -108,7 +156,7 @@ function stopPIFaceDriver(node) {
 // send the message out to the PIFaceCAD lcd module via the python process we
 // started earlier
 function display(node, msg) {
-    console.log( "got:" + msg);
+    console.log( "got:" + msg.payload);
 	
     // preprocess the string if we want
     //  - dimensions?
@@ -116,10 +164,18 @@ function display(node, msg) {
 
     // clear the screen
     // push the new message 
+    if (msg.light==true ){
+        msg.light = "on";
+    } else {
+        msg.light = "off";
+    }
+
+
     
     if (node.child != null) {
         node.log("push the msg to the driver");
-        node.child.stdin.write('disp ' + msg +  '\n');
+        node.child.stdin.write('light ' + msg.light +  '\n');
+        node.child.stdin.write('disp ' + msg.payload +  '\n');
     } else {
         executeCmd(node, "disp " + msg );
     }

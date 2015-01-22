@@ -11,6 +11,7 @@
             width: {value:"16"},
             height: {value:"2"},
             showCursor: {value:false},
+            lightOn: {value:false},
         },
         inputs:1,
         outputs:1,
@@ -39,8 +40,48 @@
         <input type="checkbox" id="node-input-showCursor" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-input-showCursor" style="width: 70%;">Display the cursor</label>
     </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-lightOn" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-lightOn" style="width: 70%;">Light on</label>
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="PIFaceCAD-lcd">
     <p>first pass to wrap the PIFaceCAD LCD (output)</p>
+</script>
+
+
+
+
+
+<!-- 
+ PIFaceCAD-in.html
+ RedNode presentation file for PIFaceCAD  switches / buttons.
+-->
+<script type="text/javascript">
+    RED.nodes.registerType('PIFaceCAD-in',{
+        category: 'input',
+        color: '#cdbbcf',
+        defaults: {
+            name: {value:""},
+        },
+        inputs:1,
+        outputs:1,
+        icon: "PIFaceCADIN.png",
+        label: function() {
+            return this.name||"PFC in";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="PIFaceCAD-in">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i>Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="PIFaceCAD-in">
+    <p>first pass to wrap the PIFaceCAD switches (input)</p>
 </script>

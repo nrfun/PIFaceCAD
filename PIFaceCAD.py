@@ -10,35 +10,73 @@
 import sys
 import pifacecad
 
-print( 'Number of arguments:', len(sys.argv), 'arguments.')
-print( 'Argument List:', str(sys.argv))
+def handleButtonPress(event):
+    print('press ' + str(event.pin_num) )
 
 
-    
+def listenForButtonPresses():
+    global pressListenerActive
+    for i in range(8):
+        pressListener.register(i, pifacecad.IODIR_FALLING_EDGE, handleButtonPress)
+    pressListener.activate()
+    pressListenerActive = True
+
+def ignoreButtonPresses():
+    global pressListenerActive
+    if pressListenerActive == True:
+        pressListener.deactivate()
+        pressListenerActive = False
+
+
+
+
+
+def handleButtonRelease(event):
+    print('release ' + str(event.pin_num) )
+
+
+def listenForButtonReleases():
+    global releaseListenerActive
+    for i in range(8):
+        releaseListener.register(i, pifacecad.IODIR_RISING_EDGE, handleButtonRelease)
+    releaseListener.activate()
+    releaseListenerActive = True
+
+def ignoreButtonReleases():
+    global releaseListenerActive
+    if releaseListenerActive == True:
+        releaseListener.deactivate()
+        releaseListenerActive = False
+
+
+
 
 def badParams():
-    print( "Bad parameters - {disp|clear|blink|move|light|in|persist} {str|left|right|on|off|num}")
+    print( "Bad parameters - {disp|clear|blink|move|light|press|release|persist} {str|left|right|on|off|num}")
 
 
 # process the command we got. Set True if we are persistant... this might help prevent unintentionally recursing
 def dispatch(isCalledFromPersist, cmd):
-    print( 'Argument List:', str(sys.argv))
-
+    #print( 'Argument List:', str(sys.argv))
+    
     if isCalledFromPersist==True:
         # tweak what we have so it 'matches' what things are like if we are called in a non-persistent way
+        if len(cmd) < 1:
+            cmd = "dummy"
+
         cmd = "dummy " + cmd
-        args = cmd.split()
+        args = cmd.split()        
+        argsLen = len(args) + 1 # keep the dummy one
         cmd = args[1]
     else:
-        args = str(sys.argv)
-
-    print( 'Args:', args)
-
+        argsLen = len(sys.argv)
+        args = sys.argv
 
 
     if cmd == "disp":                    # display a message
-        param = args[2]
-        print( "disp " + param)
+        assert(argsLen>2)
+        param = " ".join( args[2:argsLen] ) # join with a space between whatever we got.
+        #print( "disp " + param)
         # just assume we want to see the msg
         cad.lcd.backlight_on()
         cad.lcd.clear()
@@ -50,14 +88,32 @@ def dispatch(isCalledFromPersist, cmd):
     
     elif cmd == "blink":                 # blink cursor on or off
         param = args[2].lower()
-        print( "blink" + param)
+        print( "blink " + param)
         if param=="on" : 
             cad.lcd.blink_on()
         elif param=="off":
             cad.lcd.blink_off()
         else:
             badParams()
+    elif cmd == "press":
+        param = args[2].lower()
+        print("press " + param)
+        if param=="on" : 
+            listenForButtonPresses()
+        elif param=="off":
+            ignoreButtonPresses()
+        else:
+            badParams()
 
+    elif cmd == "release":
+        param = args[2].lower()
+        print("release " + param)
+        if param=="on" : 
+            listenForButtonReleases()
+        elif param=="off":
+            ignoreButtonReleases()
+        else:
+            badParams()
 
 
     elif cmd == "cursor":                 # show or hide that cursor
@@ -88,7 +144,6 @@ def dispatch(isCalledFromPersist, cmd):
         elif param=="right":
             cad.lcd.move_right()
         else:
-            print("test")
             badParams()
 
     elif cmd == "persist":
@@ -129,6 +184,11 @@ def doPersist():
 #pifaceCAD <cmd>[<param>]
 
 cad = pifacecad.PiFaceCAD() # will cause the display to reinitialise (light off, cursor flashing to 0,0)
+pressListener = pifacecad.SwitchEventListener(chip=cad)
+pressListenerActive = False
+releaseListener = pifacecad.SwitchEventListener(chip=cad)
+releaseListenerActive = False
+
 
 if len(sys.argv) > 1:
     cmd = sys.argv[1].lower()
